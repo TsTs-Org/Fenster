@@ -149,7 +149,8 @@
         height: calc(100% - env(safe-area-inset-top));
         z-index: 101;
         border: var(--border-width) solid var(--frame-color);
-        border-radius: min(15vw, 100px);
+        border-radius: min(60vw, 140px);
+        corner-shape: squircle;
         box-sizing: border-box;
         pointer-events: none;
     }
