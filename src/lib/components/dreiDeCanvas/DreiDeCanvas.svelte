@@ -9,6 +9,7 @@
     import Sun from "./Sun.svelte";
 
     const apiKey = import.meta.env.VITE_AUTH_KEY;
+    let { lat, lng } = $props<{ lat: number; lng: number }>();
 
     let canvasContainer: HTMLDivElement;
     let permissionGranted = $state(false);
@@ -58,9 +59,6 @@
     // Usage Example:
     const heightInMeters = 5000; // 5km up
     const map_size = 2000;
-
-    const lat = 53.55;
-    const lng = 10.0;
 
     const mapUrl = getMapUrl(lat, lng, heightInMeters, apiKey, map_size);
 
