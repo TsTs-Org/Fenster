@@ -18,7 +18,7 @@
   let bottomSheet: any = $state();
   let interestMenu: any = $state();
 
-  let sheetPercentage = $state(0.1);
+  let sheetPercentage = $state(0.05);
 
   function handleMapClick(lat: number, lng: number) {
     selectedLat = lat;
