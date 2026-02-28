@@ -130,6 +130,7 @@
 <style>
     .window {
         position: fixed;
+        pointer-events: none;
         top: 0;
         left: 0;
         width: 100%;
@@ -154,6 +155,7 @@
     }
 
     .window-frame::after {
+        pointer-events: none;
         content: "";
         position: fixed;
         top: 0;
