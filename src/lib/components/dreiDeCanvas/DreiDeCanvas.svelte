@@ -1,6 +1,10 @@
 <script lang="ts">
+    // NAME DER DATEI DOOF WILL KEINE ZAHL DRIN HAM
+
     import { onMount } from "svelte";
     import * as THREE from "three";
+    import { getMapUrl } from "./util";
+    const apiKey = import.meta.env.VITE_AUTH_KEY;
 
     let canvasContainer: HTMLDivElement;
     let permissionGranted = $state(false);
@@ -41,6 +45,15 @@
         }
     }
 
+    // Usage Example:
+    const heightInMeters = 5000; // 5km up
+    const map_size = 2000;
+
+    const lat = 53.55;
+    const lng = 10.0;
+
+    const mapUrl = getMapUrl(lat, lng, heightInMeters, apiKey, map_size);
+
     onMount(() => {
         if (
             typeof (DeviceOrientationEvent as unknown as any)
@@ -80,12 +93,38 @@
             canvasContainer.appendChild(renderer.domElement);
         }
 
-        // Red plane on the bottom
-        const planeGeometry = new THREE.PlaneGeometry(100, 100);
+        // Map plane on the bottom
+        const lat = 52.52; // Example: Berlin
+        const lng = 13.405;
+        const zoom = 14;
+        const mapSize = 640;
+        // const apiKey = "YOUR_GOOGLE_MAPS_API_KEY"; // NOTE: Replace with actual API key
+
+        const textureLoader = new THREE.TextureLoader();
+        // We use a fallback gray color if the map fails to load or while it's loading
         const planeMaterial = new THREE.MeshBasicMaterial({
-            color: 0xff0000,
+            color: 0x555555,
             side: THREE.DoubleSide,
         });
+
+        textureLoader.load(
+            mapUrl,
+            (texture) => {
+                texture.colorSpace = THREE.SRGBColorSpace;
+                planeMaterial.map = texture;
+                planeMaterial.color.setHex(0xffffff); // Clear the fallback color once loaded
+                planeMaterial.needsUpdate = true;
+            },
+            undefined,
+            (err) => {
+                console.error(
+                    "Error loading map texture (check API key):",
+                    err,
+                );
+            },
+        );
+
+        const planeGeometry = new THREE.PlaneGeometry(100, 100);
         const plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = -Math.PI / 2;
         plane.position.y = -10;

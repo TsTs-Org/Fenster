@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import ThreeCanvas from "../lib/components/ThreeCanvas.svelte";
+  import ThreeCanvas from "../lib/components/dreiDeCanvas/DreiDeCanvas.svelte";
 
   let name = $state("");
   let greetMsg = $state("");
