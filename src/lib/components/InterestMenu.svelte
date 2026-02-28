@@ -51,7 +51,8 @@
     let errorDebugInfo = $state("");
 
     // Read API key
-    const apiKey = import.meta.env.VITE_AUTH_KEY;
+    // const apiKey = import.meta.env.VITE_AUTH_KEY;
+    const apiKey = "AIzaSyBOUd36mrL1xjiQqQLEdwBTxDrIm4Vw_5I";
 
     async function fetchGeminiInfo(topicPrompt: string) {
         if (!apiKey) {
