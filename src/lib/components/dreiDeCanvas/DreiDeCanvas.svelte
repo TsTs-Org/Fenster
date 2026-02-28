@@ -3,7 +3,7 @@
 
     import { onMount } from "svelte";
     import * as THREE from "three";
-    import { getMapUrl } from "./util";
+    import { getMapUrl, planeToLatLng } from "./util";
     import Skybox from "./Skybox.svelte";
     import Fog from "./Fog.svelte";
     import Sun from "./Sun.svelte";
@@ -21,6 +21,8 @@
     let timeOfDay = $state(12);
     let sunBrightness = $state(1.5);
     let sceneObj = $state<THREE.Scene>();
+
+    let clickedCoords = $state<{ lat: number; lng: number } | null>(null);
 
     function onDeviceOrientation(event: DeviceOrientationEvent) {
         alpha = event.alpha ? THREE.MathUtils.degToRad(event.alpha) : 0;
@@ -95,19 +97,13 @@
         renderer.domElement.style.position = "fixed";
         renderer.domElement.style.top = "0";
         renderer.domElement.style.left = "0";
-        renderer.domElement.style.zIndex = "-1";
-        renderer.domElement.style.pointerEvents = "none";
+        renderer.domElement.style.zIndex = "1";
 
         if (canvasContainer) {
             canvasContainer.appendChild(renderer.domElement);
         }
 
         // Map plane on the bottom
-        const lat = 52.52; // Example: Berlin
-        const lng = 13.405;
-        const zoom = 14;
-        const mapSize = 640;
-
         const textureLoader = new THREE.TextureLoader();
 
         // Define fog uniforms locally and attach to userData so Fog component can find them
@@ -185,6 +181,49 @@
         plane.name = "mapPlane";
         scene.add(plane);
 
+        // Raycasting for click-to-coordinate
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        const onClick = (event: MouseEvent | TouchEvent) => {
+            let clientX: number, clientY: number;
+            if ("touches" in event) {
+                if (event.touches.length === 0) return;
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            } else {
+                clientX = event.clientX;
+                clientY = event.clientY;
+            }
+
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(plane);
+
+            if (intersects.length > 0) {
+                const hit = intersects[0];
+                // Get the intersection point in the plane's local coordinate space
+                const localPoint = plane.worldToLocal(hit.point.clone());
+
+                const coords = planeToLatLng(
+                    localPoint.x,
+                    localPoint.y,
+                    lat,
+                    lng,
+                    heightInMeters,
+                );
+
+                clickedCoords = coords;
+                console.log(
+                    `Clicked: lat=${coords.lat.toFixed(6)}, lng=${coords.lng.toFixed(6)}`,
+                );
+            }
+        };
+
+        renderer.domElement.addEventListener("click", onClick);
+
         const resize = () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -225,6 +264,7 @@
                 onDeviceOrientation,
             );
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            renderer.domElement.removeEventListener("click", onClick);
             renderer.dispose();
             if (
                 canvasContainer &&
@@ -237,6 +277,12 @@
 </script>
 
 <div bind:this={canvasContainer}></div>
+
+{#if clickedCoords}
+    <div class="coord-display">
+        📍 {clickedCoords.lat.toFixed(6)}, {clickedCoords.lng.toFixed(6)}
+    </div>
+{/if}
 
 {#if sceneObj}
     <Skybox scene={sceneObj} time={timeOfDay} />
@@ -305,5 +351,20 @@
         align-items: center;
         gap: 10px;
         font-family: sans-serif;
+    }
+
+    .coord-display {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: #00ff88;
+        padding: 8px 16px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-family: monospace;
+        font-size: 14px;
+        pointer-events: none;
     }
 </style>
