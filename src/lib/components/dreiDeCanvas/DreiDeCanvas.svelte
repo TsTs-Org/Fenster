@@ -4,6 +4,8 @@
     import { onMount } from "svelte";
     import * as THREE from "three";
     import { getMapUrl } from "./util";
+    import Skybox from "./Skybox.svelte";
+
     const apiKey = import.meta.env.VITE_AUTH_KEY;
 
     let canvasContainer: HTMLDivElement;
@@ -13,6 +15,9 @@
         beta = 0,
         gamma = 0;
     let orient = 0;
+
+    let timeOfDay = $state(12);
+    let sceneObj = $state<THREE.Scene>();
 
     function onDeviceOrientation(event: DeviceOrientationEvent) {
         alpha = event.alpha ? THREE.MathUtils.degToRad(event.alpha) : 0;
@@ -70,6 +75,7 @@
 
         const scene = new THREE.Scene();
         scene.background = null;
+        sceneObj = scene;
 
         const camera = new THREE.PerspectiveCamera(
             75,
@@ -186,6 +192,28 @@
 
 <div bind:this={canvasContainer}></div>
 
+{#if sceneObj}
+    <Skybox scene={sceneObj} time={timeOfDay} />
+{/if}
+
+<div class="time-controls">
+    <label for="time"
+        >Time: {Math.floor(timeOfDay).toString().padStart(2, "0")}:{Math.floor(
+            (timeOfDay % 1) * 60,
+        )
+            .toString()
+            .padStart(2, "0")}</label
+    >
+    <input
+        id="time"
+        type="range"
+        min="0"
+        max="24"
+        step="0.1"
+        bind:value={timeOfDay}
+    />
+</div>
+
 {#if showPermissionButton && !permissionGranted}
     <div class="permission-overlay">
         <button onclick={requestPermission}>Enable 3D Device Orientation</button
@@ -200,5 +228,21 @@
         left: 50%;
         transform: translateX(-50%);
         z-index: 1000;
+    }
+
+    .time-controls {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: sans-serif;
     }
 </style>
