@@ -5,13 +5,15 @@
 
     let containerElement: HTMLDivElement | undefined = $state();
 
+    const HANDLE_HEIGHT = 50; // Height of the drag handle area
+
     // The current height of the shade in pixels
-    let currentY = $state(0);
+    let currentY = $state(HANDLE_HEIGHT);
     let isDragging = $state(false);
     let startY = $state(0);
 
-    // 10%, 40%, 100%
-    const snapPercentages = [0.1, 0.4, 1.0];
+    // snap points (percentages of remaining space above handle)
+    const snapPercentages = [0.4, 1.0];
     let containerHeight = $state(0);
     let initialRender = $state(true);
 
@@ -24,8 +26,8 @@
             if (oldHeight > 0) {
                 currentY = (currentY / oldHeight) * containerHeight;
             } else {
-                // Start mostly open (10% shaded)
-                currentY = containerHeight * 0.1;
+                // Start with just the handle showing
+                currentY = HANDLE_HEIGHT;
             }
         };
 
@@ -46,7 +48,6 @@
         isDragging = true;
 
         // currentY is the height of the shade.
-        // e.clientY is the vertical mouse position.
         startY = currentY - e.clientY;
 
         window.addEventListener("pointermove", onPointerMove);
@@ -58,7 +59,8 @@
         if (!isDragging) return;
 
         let newY = startY + e.clientY;
-        currentY = Math.max(0, Math.min(newY, containerHeight));
+        // Clamp: at least the handle height, at most the container height
+        currentY = Math.max(HANDLE_HEIGHT, Math.min(newY, containerHeight));
     }
 
     function onPointerUp(_e: PointerEvent) {
@@ -70,20 +72,24 @@
         window.removeEventListener("pointercancel", onPointerUp);
 
         if (containerHeight > 0) {
-            const currentPercentage = currentY / containerHeight;
+            // Snapping options: exactly HANDLE_HEIGHT, or percentage-based
+            const snapPoints = [
+                HANDLE_HEIGHT,
+                ...snapPercentages.map((p) => p * containerHeight),
+            ];
 
-            let closestPercent = snapPercentages[0];
-            let minDiff = Math.abs(currentPercentage - snapPercentages[0]);
+            let closest = snapPoints[0];
+            let minDiff = Math.abs(currentY - snapPoints[0]);
 
-            for (let i = 1; i < snapPercentages.length; i++) {
-                const diff = Math.abs(currentPercentage - snapPercentages[i]);
+            for (let i = 1; i < snapPoints.length; i++) {
+                const diff = Math.abs(currentY - snapPoints[i]);
                 if (diff < minDiff) {
                     minDiff = diff;
-                    closestPercent = snapPercentages[i];
+                    closest = snapPoints[i];
                 }
             }
 
-            currentY = closestPercent * containerHeight;
+            currentY = closest;
         }
     }
 
@@ -135,17 +141,13 @@
 
     /* The outer plane window frame overlay */
     .window-frame {
-        /* background-color: red; */
-
         position: fixed;
         top: 0;
         left: calc(0px - var(--border-width));
         width: calc(100% + 2 * var(--border-width));
         height: 100%;
         z-index: 101;
-        /* border: min(6vw, 36px) solid #ecebdc; */
         border: var(--border-width) solid var(--frame-color);
-        /* border-inline: none; */
         border-radius: min(15vw, 100px);
         box-sizing: border-box;
         pointer-events: none;
@@ -161,23 +163,18 @@
         border: var(--border-width) solid var(--frame-color);
         height: 100%;
         z-index: 100;
-        /* background-color: rgba(255, 255, 255, 0.5); */
     }
 
     /* Contains the shade inside the bounds of the window */
     .shade-container {
         position: fixed;
-        /* top: min(5vw, 32px); */
         top: var(--border-width);
-        /* left: min(6vw, 36px); */
-        /* width: calc(100% - min(12vw, 72px)); */
         width: 100%;
         height: calc(100% - min(12vw, 72px));
         z-index: -100;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
-        /* border-radius: min(10vw, 70px); Inner curve matching frame */
         overflow: hidden; /* Clips the shade */
         pointer-events: none; /* Let map clicks pass through container */
     }
@@ -185,8 +182,7 @@
     /* The actual pull-down shade */
     .window-shade {
         z-index: -1;
-        /* background: #f0eedf; */
-        background-color: red;
+        background-color: #c9c9c0;
         background-image: repeating-linear-gradient(
             0deg,
             transparent,
@@ -201,21 +197,24 @@
         flex-direction: column;
         overflow: hidden;
         will-change: height;
-        border-bottom: 2px solid #dfded0;
+        /* border-bottom: 2px solid #dfded0; */
+
+        border-radius: 0 0 var(--border-width) var(--border-width);
     }
 
     .content {
         flex: 1;
         overflow-y: auto;
-        padding: 24px;
         color: #333;
         scrollbar-width: thin;
-        mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
         -webkit-mask-image: linear-gradient(
             to bottom,
-            black 90%,
+            black 85%,
             transparent 100%
         );
+
+        /* border-radius: 0 0 12px 12px; */
     }
 
     .drag-handle-area {
@@ -227,8 +226,10 @@
         cursor: grab;
         touch-action: none;
         flex-shrink: 0;
-        background: linear-gradient(to bottom, #f0eedf, #e8e7d8);
-        border-top: 1px solid rgba(255, 255, 255, 0.8);
+        /* background: red; */
+        background: linear-gradient(to bottom, #e0dfd1, #d5d4c7);
+        /* border-top: 1px solid rgba(255, 255, 255, 0.8); */
+        border-radius: 0 0 12px 12px;
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
     }
 
