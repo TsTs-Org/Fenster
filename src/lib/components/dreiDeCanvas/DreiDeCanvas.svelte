@@ -5,7 +5,7 @@
     import * as THREE from "three";
     import { getMapUrl } from "./util";
     import Skybox from "./Skybox.svelte";
-    import FogConfig from "./FogConfig.svelte";
+    import Fog from "./Fog.svelte";
     import Sun from "./Sun.svelte";
 
     const apiKey = import.meta.env.VITE_AUTH_KEY;
@@ -21,19 +21,6 @@
     let timeOfDay = $state(12);
     let sunBrightness = $state(1.5);
     let sceneObj = $state<THREE.Scene>();
-
-    // Fog Vignette Settings
-    let fogRadius = $state(40.0);
-    let fogSmooth = $state(20.0);
-    let planeUniforms = $state({
-        map: { value: null as THREE.Texture | null },
-        get radius() {
-            return { value: fogRadius };
-        },
-        get smoothness() {
-            return { value: fogSmooth };
-        },
-    });
 
     function onDeviceOrientation(event: DeviceOrientationEvent) {
         alpha = event.alpha ? THREE.MathUtils.degToRad(event.alpha) : 0;
@@ -123,6 +110,12 @@
 
         const textureLoader = new THREE.TextureLoader();
 
+        // Define fog uniforms locally and attach to userData so Fog component can find them
+        const planeUniforms = {
+            radius: { value: 40.0 },
+            smoothness: { value: 20.0 },
+        };
+
         // We use a Lambert material so it reacts to the Sun light.
         // We hook into it to add the vignette via onBeforeCompile.
         const planeMaterial = new THREE.MeshLambertMaterial({
@@ -130,6 +123,8 @@
             transparent: true,
             side: THREE.DoubleSide,
         });
+
+        planeMaterial.userData.uniforms = planeUniforms;
 
         planeMaterial.onBeforeCompile = (shader) => {
             shader.uniforms.radius = planeUniforms.radius;
@@ -187,6 +182,7 @@
         const plane = new THREE.Mesh(planeGeometry, planeMaterial);
         plane.rotation.x = -Math.PI / 2;
         plane.position.y = -10;
+        plane.name = "mapPlane";
         scene.add(plane);
 
         const resize = () => {
@@ -245,10 +241,8 @@
 {#if sceneObj}
     <Skybox scene={sceneObj} time={timeOfDay} />
     <Sun scene={sceneObj} brightness={sunBrightness} />
+    <Fog scene={sceneObj} />
 {/if}
-
-<!-- Fog settings UI -->
-<FogConfig bind:radius={fogRadius} bind:smooth={fogSmooth} />
 
 <div class="time-controls">
     <label for="time"

@@ -1,8 +1,24 @@
 <script lang="ts">
-    let { radius = $bindable(40), smooth = $bindable(20) } = $props<{
-        radius: number;
-        smooth: number;
-    }>();
+    import * as THREE from "three";
+
+    let { scene } = $props<{ scene: THREE.Scene }>();
+
+    let radius = $state(40);
+    let smooth = $state(20);
+
+    // This effect ensures that whenever radius or smooth change,
+    // we find the map plane in the scene and update its material uniforms.
+    $effect(() => {
+        if (!scene) return;
+        const mesh = scene.getObjectByName("mapPlane") as THREE.Mesh;
+        if (mesh && mesh.material) {
+            const mat = mesh.material as any;
+            if (mat.userData && mat.userData.uniforms) {
+                mat.userData.uniforms.radius.value = radius;
+                mat.userData.uniforms.smoothness.value = smooth;
+            }
+        }
+    });
 </script>
 
 <div class="fog-controls">
