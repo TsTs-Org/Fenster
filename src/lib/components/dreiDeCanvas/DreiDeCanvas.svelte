@@ -98,7 +98,6 @@
         const lng = 13.405;
         const zoom = 14;
         const mapSize = 640;
-        // const apiKey = "YOUR_GOOGLE_MAPS_API_KEY"; // NOTE: Replace with actual API key
 
         const textureLoader = new THREE.TextureLoader();
         // We use a fallback gray color if the map fails to load or while it's loading
@@ -129,17 +128,6 @@
         plane.rotation.x = -Math.PI / 2;
         plane.position.y = -10;
         scene.add(plane);
-
-        const gridHelper = new THREE.GridHelper(100, 100);
-        gridHelper.position.y = -9.9;
-        scene.add(gridHelper);
-
-        // Add a simple box straight ahead for visual reference
-        const boxGeometry = new THREE.BoxGeometry(2, 2, 2);
-        const boxMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
-        const box = new THREE.Mesh(boxGeometry, boxMaterial);
-        box.position.set(0, 0, -10);
-        scene.add(box);
 
         const resize = () => {
             camera.aspect = window.innerWidth / window.innerHeight;
