@@ -92,8 +92,8 @@
                 }
             }
 
-            currentY = closestPercent * containerHeight;
-            percentage = closestPercent;
+            currentY = closest;
+            percentage = closest / containerHeight;
         }
     }
 
