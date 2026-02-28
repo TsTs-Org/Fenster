@@ -28,8 +28,8 @@
   }
 </script>
 
-<ThreeCanvas lat={mapLat} lng={mapLng} onmapclick={handleMapClick} />
-
 <BottomSheet bind:this={bottomSheet}>
   <InterestMenu lat={selectedLat} lng={selectedLng} bind:this={interestMenu} />
 </BottomSheet>
+
+<ThreeCanvas lat={mapLat} lng={mapLng} onmapclick={handleMapClick} />

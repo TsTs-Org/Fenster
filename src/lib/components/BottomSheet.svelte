@@ -98,64 +98,95 @@
     );
 </script>
 
-<div class="window-frame"></div>
-
-<div class="shade-container" bind:this={containerElement}>
-    <div class="window-shade" style={sheetStyle}>
-        <div class="content">
-            {@render children?.()}
-        </div>
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <div
-            class="drag-handle-area"
-            onpointerdown={onPointerDown}
-            aria-label="Pull airplane shade handle"
-        >
-            <div class="drag-handle">
-                <div class="ridge"></div>
-                <div class="ridge"></div>
-                <div class="ridge"></div>
+<div class="window">
+    <div class="window-frame"></div>
+    <div class="shade-container" bind:this={containerElement}>
+        <div class="window-shade" style={sheetStyle}>
+            <div class="content">
+                {@render children?.()}
+            </div>
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+                class="drag-handle-area"
+                onpointerdown={onPointerDown}
+                aria-label="Pull airplane shade handle"
+            >
+                <div class="drag-handle">
+                    <div class="ridge"></div>
+                    <div class="ridge"></div>
+                    <div class="ridge"></div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* The outer plane window frame overlay */
-    .window-frame {
+    .window {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
+        z-index: 100;
+        --frame-color: #ecebdc;
+        --border-width: min(6vw, 36px);
+    }
+
+    /* The outer plane window frame overlay */
+    .window-frame {
+        /* background-color: red; */
+
+        position: fixed;
+        top: 0;
+        left: calc(0px - var(--border-width));
+        width: calc(100% + 2 * var(--border-width));
+        height: 100%;
         z-index: 101;
-        border: min(6vw, 36px) solid #ecebdc;
-        border-inline: none;
+        /* border: min(6vw, 36px) solid #ecebdc; */
+        border: var(--border-width) solid var(--frame-color);
+        /* border-inline: none; */
         border-radius: min(15vw, 100px);
         box-sizing: border-box;
         pointer-events: none;
     }
 
+    .window-frame::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: calc(0px - var(--border-width));
+        width: calc(100% + 2 * var(--border-width));
+        box-sizing: border-box;
+        border: var(--border-width) solid var(--frame-color);
+        height: 100%;
+        z-index: 100;
+        /* background-color: rgba(255, 255, 255, 0.5); */
+    }
+
     /* Contains the shade inside the bounds of the window */
     .shade-container {
         position: fixed;
-        top: min(5vw, 32px);
+        /* top: min(5vw, 32px); */
+        top: var(--border-width);
         /* left: min(6vw, 36px); */
         /* width: calc(100% - min(12vw, 72px)); */
         width: 100%;
         height: calc(100% - min(12vw, 72px));
-        z-index: 100;
+        z-index: -100;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
-        border-radius: min(10vw, 70px); /* Inner curve matching frame */
+        /* border-radius: min(10vw, 70px); Inner curve matching frame */
         overflow: hidden; /* Clips the shade */
         pointer-events: none; /* Let map clicks pass through container */
     }
 
     /* The actual pull-down shade */
     .window-shade {
-        background: #f0eedf;
+        z-index: -1;
+        /* background: #f0eedf; */
+        background-color: red;
         background-image: repeating-linear-gradient(
             0deg,
             transparent,
