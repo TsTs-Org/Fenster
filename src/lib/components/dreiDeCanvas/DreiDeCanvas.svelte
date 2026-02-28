@@ -340,11 +340,11 @@
 
 <div bind:this={canvasContainer}></div>
 
-{#if clickedCoords}
+<!-- {#if clickedCoords}
     <div class="coord-display">
         📍 {clickedCoords.lat.toFixed(6)}, {clickedCoords.lng.toFixed(6)}
     </div>
-{/if}
+{/if} -->
 
 {#if sceneObj}
     <Skybox scene={sceneObj} time={timeOfDay} />
