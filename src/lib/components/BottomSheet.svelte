@@ -181,7 +181,7 @@
         width: calc(100% + 2 * var(--border-width));
         box-sizing: border-box;
         border: var(--border-width) solid var(--frame-color);
-        height: 100%;
+        height: calc(100% - env(safe-area-inset-top));
         z-index: 100;
     }
 

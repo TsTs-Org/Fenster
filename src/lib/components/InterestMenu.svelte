@@ -222,8 +222,8 @@
 <div class="interest-menu">
     {#if view === "selection"}
         <div class="fade-in">
-            <h2 class="center-text">What are you exploring?</h2>
-            <p class="subtitle center-text">
+            <h2>What are you exploring?</h2>
+            <p class="subtitle">
                 Select an interest to learn about the area below you.
             </p>
 
@@ -383,6 +383,8 @@
         width: 100%;
         max-width: 600px;
         margin: 0 auto;
+        padding: 20px;
+        box-sizing: border-box;
     }
 
     h2 {
@@ -390,7 +392,8 @@
         margin-bottom: 8px;
         font-size: 1.5rem;
         font-weight: 600;
-        color: #222;
+        color: #2d2c2c;
+        text-align: left;
     }
 
     h3 {
@@ -412,7 +415,7 @@
     .subtitle {
         color: #666;
         margin-top: 0;
-        margin-bottom: 24px;
+        margin-bottom: 40px;
         font-size: 0.95rem;
     }
 
