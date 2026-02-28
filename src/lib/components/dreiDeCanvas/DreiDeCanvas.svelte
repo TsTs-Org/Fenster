@@ -9,7 +9,11 @@
     import Sun from "./Sun.svelte";
 
     const apiKey = import.meta.env.VITE_AUTH_KEY;
-    let { lat, lng } = $props<{ lat: number; lng: number }>();
+    let { lat, lng, onmapclick } = $props<{
+        lat: number;
+        lng: number;
+        onmapclick?: (lat: number, lng: number) => void;
+    }>();
 
     let canvasContainer: HTMLDivElement;
     let permissionGranted = $state(false);
@@ -217,6 +221,10 @@
                 console.log(
                     `Clicked: lat=${coords.lat.toFixed(6)}, lng=${coords.lng.toFixed(6)}`,
                 );
+
+                if (onmapclick) {
+                    onmapclick(coords.lat, coords.lng);
+                }
             }
         };
 

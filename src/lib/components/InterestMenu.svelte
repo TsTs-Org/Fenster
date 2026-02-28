@@ -153,6 +153,12 @@
         errorMessage = "";
         errorDebugInfo = "";
     }
+
+    export function reset() {
+        if (view !== "selection") {
+            goBack();
+        }
+    }
 </script>
 
 <div class="interest-menu">

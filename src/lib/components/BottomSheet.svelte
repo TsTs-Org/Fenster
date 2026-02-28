@@ -87,6 +87,12 @@
         }
     }
 
+    export function open(percentage = 0.4) {
+        if (containerHeight > 0) {
+            currentY = percentage * containerHeight;
+        }
+    }
+
     let sheetStyle = $derived(
         `height: ${currentY}px; transition: ${isDragging || initialRender ? "none" : "height 0.4s cubic-bezier(0.25, 1, 0.5, 1)"};`,
     );

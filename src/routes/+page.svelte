@@ -3,12 +3,33 @@
   import InterestMenu from "$lib/components/InterestMenu.svelte";
   import ThreeCanvas from "../lib/components/dreiDeCanvas/DreiDeCanvas.svelte";
 
-  let lat = $state(53.55);
-  let lng = $state(10.0);
+  // Center coordinates of the map
+  let mapLat = $state(53.55);
+  let mapLng = $state(10.0);
+
+  // Specific coordinates the user clicked on
+  let selectedLat = $state(mapLat);
+  let selectedLng = $state(mapLng);
+
+  let bottomSheet: any = $state();
+  let interestMenu: any = $state();
+
+  function handleMapClick(lat: number, lng: number) {
+    selectedLat = lat;
+    selectedLng = lng;
+
+    if (bottomSheet) {
+      bottomSheet.open(0.4); // Open shade to 40%
+    }
+
+    if (interestMenu) {
+      interestMenu.reset(); // Return menu to the main circle selection
+    }
+  }
 </script>
 
-<ThreeCanvas {lat} {lng} />
+<ThreeCanvas lat={mapLat} lng={mapLng} onmapclick={handleMapClick} />
 
-<BottomSheet>
-  <InterestMenu {lat} {lng} />
+<BottomSheet bind:this={bottomSheet}>
+  <InterestMenu lat={selectedLat} lng={selectedLng} bind:this={interestMenu} />
 </BottomSheet>
