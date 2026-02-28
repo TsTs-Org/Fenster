@@ -6,6 +6,7 @@
     import { getMapUrl } from "./util";
     import Skybox from "./Skybox.svelte";
     import FogConfig from "./FogConfig.svelte";
+    import Sun from "./Sun.svelte";
 
     const apiKey = import.meta.env.VITE_AUTH_KEY;
 
@@ -18,6 +19,7 @@
     let orient = 0;
 
     let timeOfDay = $state(12);
+    let sunBrightness = $state(1.5);
     let sceneObj = $state<THREE.Scene>();
 
     // Fog Vignette Settings
@@ -121,49 +123,44 @@
 
         const textureLoader = new THREE.TextureLoader();
 
-        const vertexShader = `
-            varying vec2 vUv;
-            varying vec3 vPosition;
-            void main() {
-                vUv = uv;
-                // vPosition will be interpolated across the plane. 
-                // Since the plane is 100x100 and centered at 0,0,0 initially, 
-                // we can just use the local coordinates to measure distance from center.
-                vPosition = position; 
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-        `;
-
-        const fragmentShader = `
-            uniform sampler2D map;
-            uniform float radius;
-            uniform float smoothness;
-            
-            varying vec2 vUv;
-            varying vec3 vPosition;
-
-            void main() {
-                vec4 texColor = texture2D(map, vUv);
-                
-                // Calculate horizontal distance from center of plane (0,0)
-                float dist = length(vPosition.xy);
-                
-                // Calculate alpha: 1.0 inside radius, soft falloff across smoothness, 0.0 outside
-                float alpha = 1.0 - smoothstep(radius - smoothness, radius, dist);
-
-                // Use the map color, but apply the derived transparency for the vignette
-                gl_FragColor = vec4(texColor.rgb, texColor.a * alpha);
-            }
-        `;
-
-        // We use a custom shader material to apply the circular fade
-        const planeMaterial = new THREE.ShaderMaterial({
-            vertexShader,
-            fragmentShader,
-            uniforms: planeUniforms,
+        // We use a Lambert material so it reacts to the Sun light.
+        // We hook into it to add the vignette via onBeforeCompile.
+        const planeMaterial = new THREE.MeshLambertMaterial({
+            color: 0xffffff,
             transparent: true,
             side: THREE.DoubleSide,
         });
+
+        planeMaterial.onBeforeCompile = (shader) => {
+            shader.uniforms.radius = planeUniforms.radius;
+            shader.uniforms.smoothness = planeUniforms.smoothness;
+
+            shader.vertexShader = `
+                varying vec3 vPositionLocal;
+                ${shader.vertexShader}
+            `.replace(
+                "#include <begin_vertex>",
+                `
+                #include <begin_vertex>
+                vPositionLocal = position;
+                `,
+            );
+
+            shader.fragmentShader = `
+                uniform float radius;
+                uniform float smoothness;
+                varying vec3 vPositionLocal;
+                ${shader.fragmentShader}
+            `.replace(
+                "#include <dithering_fragment>",
+                `
+                #include <dithering_fragment>
+                float dist = length(vPositionLocal.xy);
+                float alpha = 1.0 - smoothstep(radius - smoothness, radius, dist);
+                gl_FragColor = vec4(gl_FragColor.rgb, gl_FragColor.a * alpha);
+                `,
+            );
+        };
 
         textureLoader.load(
             mapUrl,
@@ -173,7 +170,8 @@
                 texture.minFilter = THREE.LinearMipmapLinearFilter;
                 texture.generateMipmaps = true;
 
-                planeUniforms.map.value = texture;
+                // Directly setting the map configures the Shader chunks internally
+                planeMaterial.map = texture;
                 planeMaterial.needsUpdate = true;
             },
             undefined,
@@ -246,6 +244,7 @@
 
 {#if sceneObj}
     <Skybox scene={sceneObj} time={timeOfDay} />
+    <Sun scene={sceneObj} brightness={sunBrightness} />
 {/if}
 
 <!-- Fog settings UI -->
@@ -266,6 +265,19 @@
         max="24"
         step="0.1"
         bind:value={timeOfDay}
+    />
+
+    <label for="sun" style="margin-left: 15px;"
+        >Sun Brightness: {sunBrightness.toFixed(1)}</label
+    >
+    <input
+        id="sun"
+        type="range"
+        min="0"
+        max="5"
+        step="0.1"
+        bind:value={sunBrightness}
+        style="width: 100px;"
     />
 </div>
 
