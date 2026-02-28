@@ -22,5 +22,8 @@ function getZoomFromHeight(height: number, lat = 40.7128): number{
 
 export function getMapUrl(lat: number, lng: number, height: number, apiKey: string, map_size: number): string {
     const zoom = getZoomFromHeight(height, lat);
-    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=${map_size}x${map_size}&maptype=satellite&key=${apiKey}`;
+    // The scale=2 parameter doubles the resolution (number of pixels).
+    // Note: Standard API limit for 'size' is 640x640. With scale=2, you get 1280x1280 pixels.
+    const constrainedSize = Math.min(map_size, 640);
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=${constrainedSize}x${constrainedSize}&scale=2&maptype=satellite&key=${apiKey}`;
 }

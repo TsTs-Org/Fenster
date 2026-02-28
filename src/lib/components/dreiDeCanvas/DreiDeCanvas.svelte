@@ -110,6 +110,10 @@
             mapUrl,
             (texture) => {
                 texture.colorSpace = THREE.SRGBColorSpace;
+                texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+                texture.minFilter = THREE.LinearMipmapLinearFilter;
+                texture.generateMipmaps = true;
+
                 planeMaterial.map = texture;
                 planeMaterial.color.setHex(0xffffff); // Clear the fallback color once loaded
                 planeMaterial.needsUpdate = true;
