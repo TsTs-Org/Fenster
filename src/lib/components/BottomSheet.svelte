@@ -3,7 +3,7 @@
 
     let {
         children,
-        percentage = $bindable(0.1),
+        percentage = $bindable(0),
     }: { children?: Snippet; percentage?: number } = $props();
 
     let containerElement: HTMLDivElement | undefined = $state();

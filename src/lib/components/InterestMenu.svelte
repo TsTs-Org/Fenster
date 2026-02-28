@@ -51,8 +51,7 @@
     let errorDebugInfo = $state("");
 
     // Read API key
-    // const apiKey = import.meta.env.VITE_AUTH_KEY;
-    const apiKey = "AIzaSyBOUd36mrL1xjiQqQLEdwBTxDrIm4Vw_5I";
+    const apiKey = import.meta.env.VITE_AUTH_KEY;
 
     async function fetchGeminiInfo(topicPrompt: string) {
         if (!apiKey) {
@@ -223,10 +222,7 @@
 <div class="interest-menu">
     {#if view === "selection"}
         <div class="fade-in">
-            <h2>What are you exploring?</h2>
-            <p class="subtitle">
-                Select an interest to learn about the area below you.
-            </p>
+            <h2>What are you Interested in?</h2>
 
             <div
                 class="circle-container"
@@ -294,9 +290,7 @@
             {/if}
             <div class="spinner"></div>
             <p>
-                Asking Gemini about {selectedTopic} at {lat.toFixed(2)}, {lng.toFixed(
-                    2,
-                )}...
+                Doing some research about {selectedTopic}...
             </p>
         </div>
     {:else if view === "result"}
@@ -345,23 +339,6 @@
                         </div>
                     </div>
                 {/if}
-
-                {#if parsedLocations.length > 0}
-                    <div
-                        class="locations-debug"
-                        style="margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 8px; font-size: 0.9em;"
-                    >
-                        <h4>Extracted Locations</h4>
-                        <ul style="margin: 5px 0 0 20px; padding: 0;">
-                            {#each parsedLocations as loc}
-                                <li>
-                                    <strong>{loc.name}:</strong>
-                                    {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)}
-                                </li>
-                            {/each}
-                        </ul>
-                    </div>
-                {/if}
             {/if}
 
             <button class="p-button text-btn back-btn" onclick={goBack}>
@@ -384,7 +361,7 @@
         width: 100%;
         max-width: 600px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 40px;
         box-sizing: border-box;
     }
 
@@ -519,7 +496,7 @@
         align-items: center;
         font-size: 4.5rem;
         pointer-events: none;
-        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+        /* filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15)); */
     }
 
     .circle-item {
@@ -533,7 +510,7 @@
         border-radius: 50%;
         background: #f0eedf;
         border: 2px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
         display: flex;
         flex-direction: column;
         justify-content: center;

@@ -9,9 +9,9 @@
     import Sun from "./Sun.svelte";
     import MapMarker from "./MapMarker.svelte";
 
-    // const apiKey = import.meta.env.VITE_AUTH_KEY;
+    const apiKey = import.meta.env.VITE_AUTH_KEY;
 
-    const apiKey = "AIzaSyBOUd36mrL1xjiQqQLEdwBTxDrIm4Vw_5I";
+    // const apiKey = "AIzaSyBOUd36mrL1xjiQqQLEdwBTxDrIm4Vw_5I";
     let {
         lat,
         lng,
