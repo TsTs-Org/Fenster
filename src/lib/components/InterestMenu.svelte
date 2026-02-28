@@ -4,6 +4,8 @@
     import iconArchitecture from "$lib/images/Culture.png";
     import iconSightseeing from "$lib/images/Sites.png";
     import iconFood from "$lib/images/Food.png";
+    import lufthansaLogo from "$lib/images/LUFTHANS.png";
+
     // Props
     let {
         lat,
@@ -227,7 +229,7 @@
             <div
                 class="circle-container"
                 style="height: {isExpanded
-                    ? '300px'
+                    ? '500px'
                     : '100px'}; transition: height 0.4s cubic-bezier(0.25, 1, 0.5, 1);"
             >
                 <div
@@ -236,7 +238,11 @@
                         ? 1
                         : 0}; transition: opacity 0.4s;"
                 >
-                    ✈️
+                    <img
+                        src={lufthansaLogo}
+                        alt="Lufthansa"
+                        style="width: 80px; height: 80px; object-fit: contain;"
+                    />
                 </div>
                 {#each initialInterests as interest, i}
                     {@const angle = (i * 360) / initialInterests.length - 90}
@@ -250,30 +256,34 @@
                     {@const rowSpacing =
                         rowWidth / Math.max(1, initialInterests.length - 1)}
                     {@const rowX = i * rowSpacing - rowWidth / 2}
-                    {@const rowY = 0}
+                    {@const rowY = 25}
 
                     <button
-                        class="circle-item"
+                        class="circle-item {isExpanded
+                            ? 'expanded-item'
+                            : 'collapsed-item'}"
                         style="transform: translate({isExpanded
                             ? circleX
                             : rowX}px, {isExpanded
                             ? circleY
-                            : rowY}px); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);"
+                            : rowY}px); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.3s, border-color 0.3s;"
                         onclick={() => handleInterestClick(interest)}
                     >
-                        <img
-                            class="circle-icon"
-                            src={interest.icon}
-                            alt={interest.label}
-                            style="width: 32px; height: 32px; object-fit: contain; margin-bottom: 8px;"
-                        />
-                        <span
-                            class="circle-label"
-                            style="opacity: {isExpanded
-                                ? 1
-                                : 0}; transition: opacity 0.3s;"
-                            >{interest.label}</span
-                        >
+                        <div class="icon-wrapper">
+                            <img
+                                class="circle-icon"
+                                src={interest.icon}
+                                alt={interest.label}
+                                style="width: {isExpanded
+                                    ? '32px'
+                                    : '48px'}; height: {isExpanded
+                                    ? '32px'
+                                    : '48px'}; object-fit: contain; margin-bottom: 8px; transition: width 0.3s, height 0.3s;"
+                            />
+                            <span class="circle-label" style="opacity: 1;"
+                                >{interest.label}</span
+                            >
+                        </div>
                     </button>
                 {/each}
             </div>
@@ -508,9 +518,8 @@
         margin-top: -43px;
         margin-left: -43px;
         border-radius: 50%;
-        background: #f0eedf;
-        border: 2px solid rgba(255, 255, 255, 0.8);
-        /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
+        border-radius: 50%;
+        /* display and flex stuff */
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -523,10 +532,31 @@
         padding: 0;
     }
 
-    .circle-item:hover {
+    .expanded-item {
+        background: #f0eedf;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .expanded-item:hover {
         background: #e8e7d8;
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         z-index: 10;
+    }
+
+    .collapsed-item {
+        background: transparent;
+        border: 2px solid transparent;
+    }
+
+    .collapsed-item:hover .icon-wrapper {
+        transform: scale(1.1);
+    }
+
+    .icon-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: transform 0.2s;
     }
 
     .circle-item:active {
