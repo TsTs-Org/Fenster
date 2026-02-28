@@ -18,6 +18,8 @@
   let bottomSheet: any = $state();
   let interestMenu: any = $state();
 
+  let sheetPercentage = $state(0.1);
+
   function handleMapClick(lat: number, lng: number) {
     selectedLat = lat;
     selectedLng = lng;
@@ -32,12 +34,12 @@
   }
 </script>
 
-
-<BottomSheet bind:this={bottomSheet}>
+<BottomSheet bind:this={bottomSheet} bind:percentage={sheetPercentage}>
   <InterestMenu
     lat={selectedLat}
     lng={selectedLng}
     heightInMeters={mapHeight}
+    {sheetPercentage}
     bind:this={interestMenu}
     onlocationsfetch={(locs) => (interestLocs = locs)}
   />

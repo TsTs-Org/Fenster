@@ -1,9 +1,21 @@
 <script lang="ts">
+    import iconNature from "$lib/images/Nature.png";
+    import iconHistory from "$lib/images/History.png";
+    import iconArchitecture from "$lib/images/Culture.png";
+    import iconSightseeing from "$lib/images/Sites.png";
+    import iconFood from "$lib/images/Food.png";
     // Props
-    let { lat, lng, heightInMeters, onlocationsfetch } = $props<{
+    let {
+        lat,
+        lng,
+        heightInMeters,
+        sheetPercentage = 1.0,
+        onlocationsfetch,
+    } = $props<{
         lat: number;
         lng: number;
         heightInMeters: number;
+        sheetPercentage?: number;
         onlocationsfetch?: (
             locations: { lat: number; lng: number; name: string }[],
         ) => void;
@@ -11,11 +23,11 @@
 
     // Hardcoded initial interests
     const initialInterests = [
-        { label: "Nature", icon: "🌲" },
-        { label: "History", icon: "🏛️" },
-        { label: "Architecture", icon: "🏙️" },
-        { label: "Sightseeing", icon: "🎭" },
-        { label: "Food", icon: "🪨" },
+        { label: "Nature", icon: iconNature },
+        { label: "History", icon: iconHistory },
+        { label: "Architecture", icon: iconArchitecture },
+        { label: "Sightseeing", icon: iconSightseeing },
+        { label: "Food", icon: iconFood },
     ];
 
     // Pin Colors matching DreiDeCanvas MapMarkers
@@ -26,6 +38,8 @@
     let view = $state<ViewState>("selection");
     let selectedTopic = $state("");
     let selectedIcon = $state("");
+
+    let isExpanded = $derived(sheetPercentage > 0.5);
 
     // Result State
     let answerText = $state("");
@@ -213,21 +227,56 @@
                 Select an interest to learn about the area below you.
             </p>
 
-            <div class="circle-container">
-                <div class="center-logo">✈️</div>
+            <div
+                class="circle-container"
+                style="height: {isExpanded
+                    ? '300px'
+                    : '100px'}; transition: height 0.4s cubic-bezier(0.25, 1, 0.5, 1);"
+            >
+                <div
+                    class="center-logo"
+                    style="opacity: {isExpanded
+                        ? 1
+                        : 0}; transition: opacity 0.4s;"
+                >
+                    ✈️
+                </div>
                 {#each initialInterests as interest, i}
                     {@const angle = (i * 360) / initialInterests.length - 90}
                     {@const rad = (angle * Math.PI) / 180}
                     {@const radius = 135}
-                    {@const x = Math.cos(rad) * radius}
-                    {@const y = Math.sin(rad) * radius}
+
+                    {@const circleX = Math.cos(rad) * radius}
+                    {@const circleY = Math.sin(rad) * radius}
+
+                    {@const rowWidth = 350}
+                    {@const rowSpacing =
+                        rowWidth / Math.max(1, initialInterests.length - 1)}
+                    {@const rowX = i * rowSpacing - rowWidth / 2}
+                    {@const rowY = 0}
+
                     <button
                         class="circle-item"
-                        style="transform: translate({x}px, {y}px);"
+                        style="transform: translate({isExpanded
+                            ? circleX
+                            : rowX}px, {isExpanded
+                            ? circleY
+                            : rowY}px); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);"
                         onclick={() => handleInterestClick(interest)}
                     >
-                        <span class="circle-icon">{interest.icon}</span>
-                        <span class="circle-label">{interest.label}</span>
+                        <img
+                            class="circle-icon"
+                            src={interest.icon}
+                            alt={interest.label}
+                            style="width: 32px; height: 32px; object-fit: contain; margin-bottom: 8px;"
+                        />
+                        <span
+                            class="circle-label"
+                            style="opacity: {isExpanded
+                                ? 1
+                                : 0}; transition: opacity 0.3s;"
+                            >{interest.label}</span
+                        >
                     </button>
                 {/each}
             </div>
@@ -235,7 +284,12 @@
     {:else if view === "loading"}
         <div class="fade-in loading-view relative-view">
             {#if selectedIcon}
-                <div class="top-left-icon">{selectedIcon}</div>
+                <img
+                    class="top-left-icon"
+                    src={selectedIcon}
+                    alt=""
+                    style="width: 48px; height: 48px; object-fit: contain;"
+                />
             {/if}
             <div class="spinner"></div>
             <p>
@@ -247,7 +301,12 @@
     {:else if view === "result"}
         <div class="fade-in result-view relative-view">
             {#if selectedIcon}
-                <div class="top-left-icon">{selectedIcon}</div>
+                <img
+                    class="top-left-icon"
+                    src={selectedIcon}
+                    alt=""
+                    style="width: 48px; height: 48px; object-fit: contain;"
+                />
             {/if}
             {#if errorMessage}
                 <div class="error-box">

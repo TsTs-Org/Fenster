@@ -1,7 +1,10 @@
 <script lang="ts">
     import { onMount, type Snippet } from "svelte";
 
-    let { children }: { children?: Snippet } = $props();
+    let {
+        children,
+        percentage = $bindable(0.1),
+    }: { children?: Snippet; percentage?: number } = $props();
 
     let containerElement: HTMLDivElement | undefined = $state();
 
@@ -26,9 +29,9 @@
             if (oldHeight > 0) {
                 currentY = (currentY / oldHeight) * containerHeight;
             } else {
-                // Start with just the handle showing
-                currentY = HANDLE_HEIGHT;
+                currentY = containerHeight * percentage;
             }
+            percentage = currentY / containerHeight;
         };
 
         updateHeight();
@@ -59,8 +62,8 @@
         if (!isDragging) return;
 
         let newY = startY + e.clientY;
-        // Clamp: at least the handle height, at most the container height
-        currentY = Math.max(HANDLE_HEIGHT, Math.min(newY, containerHeight));
+        currentY = Math.max(0, Math.min(newY, containerHeight));
+        percentage = currentY / containerHeight;
     }
 
     function onPointerUp(_e: PointerEvent) {
@@ -89,13 +92,15 @@
                 }
             }
 
-            currentY = closest;
+            currentY = closestPercent * containerHeight;
+            percentage = closestPercent;
         }
     }
 
-    export function open(percentage = 0.4) {
+    export function open(targetPercentage = 0.4) {
         if (containerHeight > 0) {
-            currentY = percentage * containerHeight;
+            currentY = targetPercentage * containerHeight;
+            percentage = targetPercentage;
         }
     }
 
