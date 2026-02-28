@@ -8,7 +8,7 @@ export function getZoomFromHeight(height: number, lat = 40.7128): number {
     const earthCircumference = 40075016;
     const adjustedCircumference =
         earthCircumference * Math.cos((lat * Math.PI) / 180);
-    let zoom = Math.log2(adjustedCircumference / height) - 8;
+    let zoom = Math.log2(adjustedCircumference / height) - 2;
     return Math.min(Math.max(Math.round(zoom), 0), 21);
 }
 
@@ -67,4 +67,38 @@ export function planeToLatLng(
     const resultLng = centerLng + offsetMetersX * lngPerMeter;
 
     return { lat: resultLat, lng: resultLng };
+}
+
+/**
+ * Inverts `planeToLatLng` to convert real world lat/lng back to local plane coordinates.
+ */
+export function latLngToPlane(
+    targetLat: number,
+    targetLng: number,
+    centerLat: number,
+    centerLng: number,
+    height: number,
+    planeSize: number = 100
+): { x: number; y: number } {
+    const zoom = getZoomFromHeight(height, centerLat);
+    const metersPerPixel = 156543.03392 * Math.cos(centerLat * Math.PI / 180) / Math.pow(2, zoom);
+    const imageSizePixels = Math.min(2000, 640);
+    const mapMeters = metersPerPixel * imageSizePixels;
+
+    const latPerMeter = 1 / 111320;
+    const lngPerMeter = 1 / (111320 * Math.cos(centerLat * Math.PI / 180));
+
+    // Reverse the meter offsets
+    const offsetMetersY = (targetLat - centerLat) / latPerMeter;
+    const offsetMetersX = (targetLng - centerLng) / lngPerMeter;
+
+    // Reverse the fractions
+    const fracY = offsetMetersY / mapMeters;
+    const fracX = offsetMetersX / mapMeters;
+
+    // Reverse the bounds
+    const localY = fracY * planeSize;
+    const localX = fracX * planeSize;
+
+    return { x: localX, y: localY };
 }

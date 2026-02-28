@@ -1,15 +1,25 @@
 <script lang="ts">
     // Props
-    let { lat, lng } = $props<{ lat: number; lng: number }>();
+    let { lat, lng, heightInMeters, onlocationsfetch } = $props<{
+        lat: number;
+        lng: number;
+        heightInMeters: number;
+        onlocationsfetch?: (
+            locations: { lat: number; lng: number; name: string }[],
+        ) => void;
+    }>();
 
     // Hardcoded initial interests
     const initialInterests = [
         { label: "Nature", icon: "🌲" },
         { label: "History", icon: "🏛️" },
         { label: "Architecture", icon: "🏙️" },
-        { label: "Culture", icon: "🎭" },
-        { label: "Geology", icon: "🪨" },
+        { label: "Sightseeing", icon: "🎭" },
+        { label: "Food", icon: "🪨" },
     ];
+
+    // Pin Colors matching DreiDeCanvas MapMarkers
+    const pinColors = ["#ff9900", "#00ff88", "#00bfff"];
 
     // State
     type ViewState = "selection" | "loading" | "result";
@@ -20,6 +30,9 @@
     // Result State
     let answerText = $state("");
     let followUpQuestions = $state<string[]>([]);
+    let parsedLocations = $state<{ lat: number; lng: number; name: string }[]>(
+        [],
+    );
     let errorMessage = $state("");
     let errorDebugInfo = $state("");
 
@@ -41,9 +54,9 @@
 
         try {
             const systemInstruction =
-                "You are an expert tour guide in an airplane giving passengers interesting facts about the exact location they are currently flying over. You are given the passenger's current GPS coordinates and a specific topic they want to learn about regarding that location. Keep your answers concise, engaging, and specifically tailored to the coordinates provided. Return a JSON object containing two keys: 'answer' (your response text) and 'followUpQuestions' (an array of exactly 2 or 3 short string prompts the user can click to ask you next, diving deeper into the topic).";
+                "You are an expert tour guide in an airplane giving passengers interesting facts about the exact location they are currently flying over. You are given the passenger's current GPS coordinates, their altitude in meters, and a specific topic they want to learn about regarding that location. Keep your answers concise, engaging, and specifically tailored to the coordinates and altitude visual radius provided. Return a JSON object containing three keys: 'answer' (your response text), 'followUpQuestions' (an array of exactly 2 or 3 short string prompts the user can click to ask you next), and 'locations' (an array of up to 3 objects corresponding to specific places you mentioned in your answer. Each object MUST have 'lat', 'lng', and 'name'. If you didn't mention specific pinpointable locations, return an empty array []).";
 
-            const promptText = `Current Location Coordinates: Latitude ${lat}, Longitude ${lng}. The user is interested in learning about: "${topicPrompt}".`;
+            const promptText = `Current Location Coordinates: Latitude ${lat}, Longitude ${lng}. Viewer Altitude: ${heightInMeters} meters. The user is interested in learning about: "${topicPrompt}".`;
 
             const requestBody = {
                 system_instruction: {
@@ -116,8 +129,34 @@
             const parsed = JSON.parse(textResult);
             console.log("Successfully parsed JSON:", parsed);
 
-            answerText = parsed.answer || "No answer provided.";
+            let text = parsed.answer || "No answer provided.";
+
+            const locs = parsed.locations || [];
+            parsedLocations = locs;
+
+            // Optional: Regex inject pin colors over mentioned location names
+            locs.forEach((loc: { name: string }, index: number) => {
+                if (!loc.name) return;
+                const color = pinColors[index % pinColors.length];
+                // Escape special regex characters in the place name just in case
+                const safeName = loc.name.replace(
+                    /[.*+?^${}()|[\]\\]/g,
+                    "\\$&",
+                );
+                // Global case-insensitive replacement wrapping the name in a colored pill
+                const regex = new RegExp(`(${safeName})`, "gi");
+                text = text.replace(
+                    regex,
+                    `<span style="background-color: ${color}44; border-bottom: 2px solid ${color}; padding: 0 4px; border-radius: 4px; white-space: nowrap;">📍 $1</span>`,
+                );
+            });
+
+            answerText = text;
             followUpQuestions = parsed.followUpQuestions || [];
+
+            if (onlocationsfetch) {
+                onlocationsfetch(locs);
+            }
 
             view = "result";
         } catch (error: any) {
@@ -150,8 +189,13 @@
         selectedIcon = "";
         answerText = "";
         followUpQuestions = [];
+        parsedLocations = [];
         errorMessage = "";
         errorDebugInfo = "";
+
+        if (onlocationsfetch) {
+            onlocationsfetch([]);
+        }
     }
 
     export function reset() {
@@ -220,7 +264,9 @@
             {:else}
                 <div class="answer-box">
                     <h3>About {selectedTopic}</h3>
-                    <p class="answer-text">{answerText}</p>
+                    <p class="answer-text" style="line-height: 1.6;">
+                        {@html answerText}
+                    </p>
                 </div>
 
                 {#if followUpQuestions.length > 0}
@@ -237,6 +283,23 @@
                                 </button>
                             {/each}
                         </div>
+                    </div>
+                {/if}
+
+                {#if parsedLocations.length > 0}
+                    <div
+                        class="locations-debug"
+                        style="margin-top: 20px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 8px; font-size: 0.9em;"
+                    >
+                        <h4>Extracted Locations</h4>
+                        <ul style="margin: 5px 0 0 20px; padding: 0;">
+                            {#each parsedLocations as loc}
+                                <li>
+                                    <strong>{loc.name}:</strong>
+                                    {loc.lat.toFixed(5)}, {loc.lng.toFixed(5)}
+                                </li>
+                            {/each}
+                        </ul>
                     </div>
                 {/if}
             {/if}

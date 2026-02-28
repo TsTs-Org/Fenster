@@ -3,17 +3,25 @@
 
     import { onMount } from "svelte";
     import * as THREE from "three";
-    import { getMapUrl, planeToLatLng } from "./util";
+    import { getMapUrl, planeToLatLng, latLngToPlane } from "./util";
     import Skybox from "./Skybox.svelte";
     import Fog from "./Fog.svelte";
     import Sun from "./Sun.svelte";
     import MapMarker from "./MapMarker.svelte";
 
     const apiKey = import.meta.env.VITE_AUTH_KEY;
-    let { lat, lng, onmapclick } = $props<{
+    let {
+        lat,
+        lng,
+        heightInMeters,
+        onmapclick,
+        interestLocs = [],
+    } = $props<{
         lat: number;
         lng: number;
+        heightInMeters: number;
         onmapclick?: (lat: number, lng: number) => void;
+        interestLocs?: { lat: number; lng: number; name: string }[];
     }>();
 
     let canvasContainer: HTMLDivElement;
@@ -30,6 +38,46 @@
 
     let clickedCoords = $state<{ lat: number; lng: number } | null>(null);
     let markerPosition = $state<THREE.Vector3 | null>(null);
+
+    // We need to keep a reference to the plane to map lat/lng -> 3D Space
+    let mapPlaneMesh = $state<THREE.Mesh>();
+
+    let pinColors = ["#ff9900", "#00ff88", "#00bfff"]; // Orange, Green, Blue
+
+    let calculatedInterestPins = $derived.by(() => {
+        if (!mapPlaneMesh || interestLocs.length === 0) return [];
+
+        return interestLocs.map(
+            (
+                loc: { lat: number; lng: number; name: string },
+                index: number,
+            ) => {
+                const localCoords = latLngToPlane(
+                    loc.lat,
+                    loc.lng,
+                    lat,
+                    lng,
+                    heightInMeters,
+                    100,
+                );
+
+                // localPoint is on the plane
+                let localPoint = new THREE.Vector3(
+                    localCoords.x,
+                    localCoords.y,
+                    0,
+                );
+
+                // convert to world space
+                let worldPoint = mapPlaneMesh!.localToWorld(localPoint.clone());
+
+                return {
+                    position: worldPoint,
+                    color: pinColors[index % pinColors.length],
+                };
+            },
+        );
+    });
 
     function onDeviceOrientation(event: DeviceOrientationEvent) {
         alpha = event.alpha ? THREE.MathUtils.degToRad(event.alpha) : 0;
@@ -63,7 +111,6 @@
     }
 
     // Usage Example:
-    const heightInMeters = 5000; // 5km up
     const map_size = 2000;
 
     const mapUrl = getMapUrl(lat, lng, heightInMeters, apiKey, map_size);
@@ -185,6 +232,9 @@
         plane.name = "mapPlane";
         scene.add(plane);
 
+        // Save the mesh to state so our derived function can map Gemini locations from it
+        mapPlaneMesh = plane;
+
         // Raycasting for click-to-coordinate
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
@@ -301,6 +351,9 @@
     <Sun scene={sceneObj} brightness={sunBrightness} />
     <Fog scene={sceneObj} />
     <MapMarker scene={sceneObj} position={markerPosition} />
+    {#each calculatedInterestPins as pin}
+        <MapMarker scene={sceneObj} position={pin.position} color={pin.color} />
+    {/each}
 {/if}
 
 <!-- <div class="time-controls">

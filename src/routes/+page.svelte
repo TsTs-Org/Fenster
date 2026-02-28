@@ -11,6 +11,10 @@
   let selectedLat = $state(53.55);
   let selectedLng = $state(10.0);
 
+  let mapHeight = $state(5000); // 5km up
+
+  let interestLocs = $state<{ lat: number; lng: number; name: string }[]>([]);
+
   let bottomSheet: any = $state();
   let interestMenu: any = $state();
 
@@ -28,8 +32,21 @@
   }
 </script>
 
+
 <BottomSheet bind:this={bottomSheet}>
-  <InterestMenu lat={selectedLat} lng={selectedLng} bind:this={interestMenu} />
+  <InterestMenu
+    lat={selectedLat}
+    lng={selectedLng}
+    heightInMeters={mapHeight}
+    bind:this={interestMenu}
+    onlocationsfetch={(locs) => (interestLocs = locs)}
+  />
 </BottomSheet>
 
-<ThreeCanvas lat={mapLat} lng={mapLng} onmapclick={handleMapClick} />
+<ThreeCanvas
+  lat={mapLat}
+  lng={mapLng}
+  heightInMeters={mapHeight}
+  onmapclick={handleMapClick}
+  {interestLocs}
+/>
