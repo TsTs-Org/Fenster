@@ -7,6 +7,7 @@
     import Skybox from "./Skybox.svelte";
     import Fog from "./Fog.svelte";
     import Sun from "./Sun.svelte";
+    import MapMarker from "./MapMarker.svelte";
 
     const apiKey = import.meta.env.VITE_AUTH_KEY;
     let { lat, lng, onmapclick } = $props<{
@@ -28,6 +29,7 @@
     let sceneObj = $state<THREE.Scene>();
 
     let clickedCoords = $state<{ lat: number; lng: number } | null>(null);
+    let markerPosition = $state<THREE.Vector3 | null>(null);
 
     function onDeviceOrientation(event: DeviceOrientationEvent) {
         alpha = event.alpha ? THREE.MathUtils.degToRad(event.alpha) : 0;
@@ -206,6 +208,10 @@
 
             if (intersects.length > 0) {
                 const hit = intersects[0];
+
+                // Update marker position state so the MapMarker component reacts
+                markerPosition = hit.point.clone();
+
                 // Get the intersection point in the plane's local coordinate space
                 const localPoint = plane.worldToLocal(hit.point.clone());
 
@@ -294,6 +300,7 @@
     <Skybox scene={sceneObj} time={timeOfDay} />
     <Sun scene={sceneObj} brightness={sunBrightness} />
     <Fog scene={sceneObj} />
+    <MapMarker scene={sceneObj} position={markerPosition} />
 {/if}
 
 <!-- <div class="time-controls">

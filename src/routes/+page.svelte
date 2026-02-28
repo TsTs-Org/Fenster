@@ -8,8 +8,8 @@
   let mapLng = $state(10.0);
 
   // Specific coordinates the user clicked on
-  let selectedLat = $state(mapLat);
-  let selectedLng = $state(mapLng);
+  let selectedLat = $state(53.55);
+  let selectedLng = $state(10.0);
 
   let bottomSheet: any = $state();
   let interestMenu: any = $state();
