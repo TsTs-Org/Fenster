@@ -5,6 +5,7 @@
     import * as THREE from "three";
     import { getMapUrl } from "./util";
     import Skybox from "./Skybox.svelte";
+    import FogConfig from "./FogConfig.svelte";
 
     const apiKey = import.meta.env.VITE_AUTH_KEY;
 
@@ -18,6 +19,19 @@
 
     let timeOfDay = $state(12);
     let sceneObj = $state<THREE.Scene>();
+
+    // Fog Vignette Settings
+    let fogRadius = $state(40.0);
+    let fogSmooth = $state(20.0);
+    let planeUniforms = $state({
+        map: { value: null as THREE.Texture | null },
+        get radius() {
+            return { value: fogRadius };
+        },
+        get smoothness() {
+            return { value: fogSmooth };
+        },
+    });
 
     function onDeviceOrientation(event: DeviceOrientationEvent) {
         alpha = event.alpha ? THREE.MathUtils.degToRad(event.alpha) : 0;
@@ -106,9 +120,48 @@
         const mapSize = 640;
 
         const textureLoader = new THREE.TextureLoader();
-        // We use a fallback gray color if the map fails to load or while it's loading
-        const planeMaterial = new THREE.MeshBasicMaterial({
-            color: 0x555555,
+
+        const vertexShader = `
+            varying vec2 vUv;
+            varying vec3 vPosition;
+            void main() {
+                vUv = uv;
+                // vPosition will be interpolated across the plane. 
+                // Since the plane is 100x100 and centered at 0,0,0 initially, 
+                // we can just use the local coordinates to measure distance from center.
+                vPosition = position; 
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        const fragmentShader = `
+            uniform sampler2D map;
+            uniform float radius;
+            uniform float smoothness;
+            
+            varying vec2 vUv;
+            varying vec3 vPosition;
+
+            void main() {
+                vec4 texColor = texture2D(map, vUv);
+                
+                // Calculate horizontal distance from center of plane (0,0)
+                float dist = length(vPosition.xy);
+                
+                // Calculate alpha: 1.0 inside radius, soft falloff across smoothness, 0.0 outside
+                float alpha = 1.0 - smoothstep(radius - smoothness, radius, dist);
+
+                // Use the map color, but apply the derived transparency for the vignette
+                gl_FragColor = vec4(texColor.rgb, texColor.a * alpha);
+            }
+        `;
+
+        // We use a custom shader material to apply the circular fade
+        const planeMaterial = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms: planeUniforms,
+            transparent: true,
             side: THREE.DoubleSide,
         });
 
@@ -120,8 +173,7 @@
                 texture.minFilter = THREE.LinearMipmapLinearFilter;
                 texture.generateMipmaps = true;
 
-                planeMaterial.map = texture;
-                planeMaterial.color.setHex(0xffffff); // Clear the fallback color once loaded
+                planeUniforms.map.value = texture;
                 planeMaterial.needsUpdate = true;
             },
             undefined,
@@ -195,6 +247,9 @@
 {#if sceneObj}
     <Skybox scene={sceneObj} time={timeOfDay} />
 {/if}
+
+<!-- Fog settings UI -->
+<FogConfig bind:radius={fogRadius} bind:smooth={fogSmooth} />
 
 <div class="time-controls">
     <label for="time"
