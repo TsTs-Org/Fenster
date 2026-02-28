@@ -131,7 +131,7 @@
     .window {
         position: fixed;
         pointer-events: none;
-        top: 0;
+        top: env(safe-area-inset-top);
         left: 0;
         width: 100%;
         height: 100%;
@@ -143,10 +143,10 @@
     /* The outer plane window frame overlay */
     .window-frame {
         position: fixed;
-        top: 0;
+        top: env(safe-area-inset-top);
         left: calc(0px - var(--border-width));
         width: calc(100% + 2 * var(--border-width));
-        height: 100%;
+        height: calc(100% - env(safe-area-inset-top));
         z-index: 101;
         border: var(--border-width) solid var(--frame-color);
         border-radius: min(15vw, 100px);
@@ -154,11 +154,23 @@
         pointer-events: none;
     }
 
-    .window-frame::after {
+    .window-frame::before {
         pointer-events: none;
         content: "";
         position: fixed;
         top: 0;
+        box-sizing: border-box;
+        background-color: var(--frame-color);
+        height: env(safe-area-inset-top);
+        width: 100%;
+        z-index: 100;
+    }
+
+    .window-frame::after {
+        pointer-events: none;
+        content: "";
+        position: fixed;
+        top: env(safe-area-inset-top);
         left: calc(0px - var(--border-width));
         width: calc(100% + 2 * var(--border-width));
         box-sizing: border-box;
@@ -170,9 +182,9 @@
     /* Contains the shade inside the bounds of the window */
     .shade-container {
         position: fixed;
-        top: var(--border-width);
+        top: calc(var(--border-width) + env(safe-area-inset-top));
         width: 100%;
-        height: calc(100% - min(12vw, 72px));
+        height: calc(100% - min(12vw, 72px) - env(safe-area-inset-top));
         z-index: -100;
         display: flex;
         flex-direction: column;
