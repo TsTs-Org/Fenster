@@ -4,17 +4,18 @@
 
     // Hardcoded initial interests
     const initialInterests = [
-        "Nature",
-        "History",
-        "Architecture",
-        "Culture",
-        "Geology",
+        { label: "Nature", icon: "🌲" },
+        { label: "History", icon: "🏛️" },
+        { label: "Architecture", icon: "🏙️" },
+        { label: "Culture", icon: "🎭" },
+        { label: "Geology", icon: "🪨" },
     ];
 
     // State
     type ViewState = "selection" | "loading" | "result";
     let view = $state<ViewState>("selection");
     let selectedTopic = $state("");
+    let selectedIcon = $state("");
 
     // Result State
     let answerText = $state("");
@@ -64,7 +65,7 @@
             );
 
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
                 {
                     method: "POST",
                     headers: {
@@ -132,9 +133,10 @@
         }
     }
 
-    function handleInterestClick(interest: string) {
-        selectedTopic = interest;
-        fetchGeminiInfo(interest);
+    function handleInterestClick(interest: { label: string; icon: string }) {
+        selectedTopic = interest.label;
+        selectedIcon = interest.icon;
+        fetchGeminiInfo(interest.label);
     }
 
     function handleFollowUpClick(question: string) {
@@ -145,33 +147,46 @@
     function goBack() {
         view = "selection";
         selectedTopic = "";
+        selectedIcon = "";
         answerText = "";
         followUpQuestions = [];
         errorMessage = "";
+        errorDebugInfo = "";
     }
 </script>
 
 <div class="interest-menu">
     {#if view === "selection"}
         <div class="fade-in">
-            <h2>What would you like to know?</h2>
-            <p class="subtitle">
+            <h2 class="center-text">What are you exploring?</h2>
+            <p class="subtitle center-text">
                 Select an interest to learn about the area below you.
             </p>
 
-            <div class="button-grid">
-                {#each initialInterests as interest}
+            <div class="circle-container">
+                <div class="center-logo">✈️</div>
+                {#each initialInterests as interest, i}
+                    {@const angle = (i * 360) / initialInterests.length - 90}
+                    {@const rad = (angle * Math.PI) / 180}
+                    {@const radius = 135}
+                    {@const x = Math.cos(rad) * radius}
+                    {@const y = Math.sin(rad) * radius}
                     <button
-                        class="p-button primary-btn"
+                        class="circle-item"
+                        style="transform: translate({x}px, {y}px);"
                         onclick={() => handleInterestClick(interest)}
                     >
-                        {interest}
+                        <span class="circle-icon">{interest.icon}</span>
+                        <span class="circle-label">{interest.label}</span>
                     </button>
                 {/each}
             </div>
         </div>
     {:else if view === "loading"}
-        <div class="fade-in loading-view">
+        <div class="fade-in loading-view relative-view">
+            {#if selectedIcon}
+                <div class="top-left-icon">{selectedIcon}</div>
+            {/if}
             <div class="spinner"></div>
             <p>
                 Asking Gemini about {selectedTopic} at {lat.toFixed(2)}, {lng.toFixed(
@@ -180,7 +195,10 @@
             </p>
         </div>
     {:else if view === "result"}
-        <div class="fade-in result-view">
+        <div class="fade-in result-view relative-view">
+            {#if selectedIcon}
+                <div class="top-left-icon">{selectedIcon}</div>
+            {/if}
             {#if errorMessage}
                 <div class="error-box">
                     <h3>Error</h3>
@@ -305,18 +323,6 @@
         transform: scale(0.98);
     }
 
-    .primary-btn {
-        background: #f0f0f0;
-        color: #222;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .primary-btn:hover {
-        background: #e8e8e8;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
     .outline-btn {
         background: transparent;
         color: #444;
@@ -343,10 +349,90 @@
     }
 
     /* Layouts */
-    .button-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 12px;
+    .center-text {
+        text-align: center;
+    }
+
+    .relative-view {
+        position: relative;
+    }
+
+    .top-left-icon {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        font-size: 3rem;
+        opacity: 0.9;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .circle-container {
+        position: relative;
+        width: 360px;
+        height: 360px;
+        margin: 20px auto 40px auto;
+        border-radius: 50%;
+    }
+
+    .center-logo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100px;
+        height: 100px;
+        margin-top: -50px;
+        margin-left: -50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 4.5rem;
+        pointer-events: none;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+    }
+
+    .circle-item {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 86px;
+        height: 86px;
+        margin-top: -43px;
+        margin-left: -43px;
+        border-radius: 50%;
+        background: #f0eedf;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition:
+            transform 0.2s,
+            background-color 0.2s,
+            box-shadow 0.2s;
+        padding: 0;
+    }
+
+    .circle-item:hover {
+        background: #e8e7d8;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        z-index: 10;
+    }
+
+    .circle-item:active {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .circle-icon {
+        font-size: 2.2rem;
+        margin-bottom: 4px;
+    }
+
+    .circle-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #444;
     }
 
     .follow-up-list {
@@ -361,7 +447,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 40px 0;
+        padding: 60px 0 40px 0;
         text-align: center;
         color: #666;
     }
@@ -390,6 +476,7 @@
         display: flex;
         flex-direction: column;
         gap: 24px;
+        padding-top: 65px;
     }
 
     .answer-box {

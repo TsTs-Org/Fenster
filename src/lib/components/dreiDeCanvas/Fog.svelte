@@ -21,7 +21,7 @@
     });
 </script>
 
-<div class="fog-controls">
+<!-- <div class="fog-controls">
     <div class="control-group">
         <label for="fog-radius">Fog Distance: {radius}</label>
         <input
@@ -44,7 +44,7 @@
             bind:value={smooth}
         />
     </div>
-</div>
+</div> -->
 
 <style>
     .fog-controls {

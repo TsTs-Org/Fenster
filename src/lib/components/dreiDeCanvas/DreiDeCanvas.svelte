@@ -288,7 +288,7 @@
     <Fog scene={sceneObj} />
 {/if}
 
-<div class="time-controls">
+<!-- <div class="time-controls">
     <label for="time"
         >Time: {Math.floor(timeOfDay).toString().padStart(2, "0")}:{Math.floor(
             (timeOfDay % 1) * 60,
@@ -317,7 +317,7 @@
         bind:value={sunBrightness}
         style="width: 100px;"
     />
-</div>
+</div> -->
 
 {#if showPermissionButton && !permissionGranted}
     <div class="permission-overlay">
