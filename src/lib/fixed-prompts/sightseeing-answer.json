@@ -1,0 +1,25 @@
+{
+    "answer": "Welcome aboard! Looking out your window from 5,000 meters, you have a perfect bird's-eye view of Hamburg, Germany’s 'Gateway to the World.' Directly below is the massive Port of Hamburg; those colorful 'Lego bricks' you see are actually thousands of shipping containers. To the northeast, look for the shimmering, wave-like glass roof of the Elbphilharmonie concert hall perched on the Elbe River. Just behind it, you can easily spot the dark red brickwork and narrow canals of the Speicherstadt, the world’s largest historic warehouse district and a UNESCO World Heritage site.",
+    "followUpQuestions": [
+        "Tell me about the history of the Speicherstadt.",
+        "What makes the Elbphilharmonie's architecture so special?",
+        "Can we see the Reeperbahn from this height?"
+    ],
+    "locations": [
+        {
+            "lat": 53.5408,
+            "lng": 9.9842,
+            "name": "Elbphilharmonie"
+        },
+        {
+            "lat": 53.5448,
+            "lng": 9.995,
+            "name": "Speicherstadt"
+        },
+        {
+            "lat": 53.525,
+            "lng": 9.95,
+            "name": "Port of Hamburg"
+        }
+    ]
+}

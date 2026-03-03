@@ -1,0 +1,25 @@
+{
+    "answer": "Looking down from 5,000 meters, you are soaring directly over the **Port of Hamburg**, Germany’s 'Gateway to the World.' Below us, the historic red-brick canyons of the **Speicherstadt** (Warehouse District) were built to store the world’s coffee, tea, and exotic spices arriving by sea. Just along the northern bank of the Elbe, you can see the site of the **Altona Fish Market**, where since 1703, locals have gathered at dawn for 'Fischbrötchen'—freshly caught herring or shrimp rolls. This area is also the birthplace of **Labskaus**, a hearty sailor's mash of corned beef and beetroot, and the irresistible **Franzbrötchen**, a flaky, buttery cinnamon pastry unique to this city. \n\n",
+    "followUpQuestions": [
+        "Tell me about the history of the Speicherstadt warehouses.",
+        "What are the best places to eat near the Elbe river?",
+        "Can you explain the origins of the Franzbrötchen pastry?"
+    ],
+    "locations": [
+        {
+            "lat": 53.5443,
+            "lng": 9.9923,
+            "name": "Speicherstadt (Warehouse District)"
+        },
+        {
+            "lat": 53.5451,
+            "lng": 9.9548,
+            "name": "Altona Fish Market"
+        },
+        {
+            "lat": 53.5459,
+            "lng": 9.9678,
+            "name": "St. Pauli Landungsbrücken"
+        }
+    ]
+}

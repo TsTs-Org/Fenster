@@ -8,8 +8,9 @@
     import Fog from "./Fog.svelte";
     import Sun from "./Sun.svelte";
     import MapMarker from "./MapMarker.svelte";
+    import fixedMap from "$lib/images/fixed_hamburg_map.png";
 
-    const apiKey = import.meta.env.VITE_AUTH_KEY;
+    // const apiKey = import.meta.env.VITE_AUTH_KEY;
 
     // const apiKey = "AIzaSyBOUd36mrL1xjiQqQLEdwBTxDrIm4Vw_5I";
     let {
@@ -115,8 +116,6 @@
     // Usage Example:
     const map_size = 2000;
 
-    const mapUrl = getMapUrl(lat, lng, heightInMeters, apiKey, map_size);
-
     onMount(() => {
         if (
             typeof (DeviceOrientationEvent as unknown as any)
@@ -206,8 +205,9 @@
             );
         };
 
+        // Load map texture from static local image
         textureLoader.load(
-            mapUrl,
+            fixedMap,
             (texture) => {
                 texture.colorSpace = THREE.SRGBColorSpace;
                 texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -220,10 +220,7 @@
             },
             undefined,
             (err) => {
-                console.error(
-                    "Error loading map texture (check API key):",
-                    err,
-                );
+                console.error("Error loading map texture:", err);
             },
         );
 

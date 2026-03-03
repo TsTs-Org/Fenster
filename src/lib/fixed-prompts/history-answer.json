@@ -1,0 +1,25 @@
+{
+    "answer": "Ladies and gentlemen, look out your windows! At 5,000 meters, you have a perfect bird's-eye view of the Port of Hamburg, Germany’s 'Gateway to the World.' Directly below us is the Elbe River, the lifeblood of a city that joined the Hanseatic League in the Middle Ages. To the northeast, you can see the distinctive red bricks of the Speicherstadt—the world's largest historic warehouse district, built on thousands of oak piles starting in 1883. This area was once a duty-free zone that handled everything from coffee to spices. You might also spot the spire of St. Michael's Church; for centuries, its 132-meter tower served as the primary navigation landmark for sailors returning from the North Sea.",
+    "followUpQuestions": [
+        "Tell me about the Hanseatic League's power.",
+        "What happened during the Great Fire of 1842?",
+        "How was the port rebuilt after WWII?"
+    ],
+    "locations": [
+        {
+            "lat": 53.5448,
+            "lng": 9.9951,
+            "name": "Speicherstadt"
+        },
+        {
+            "lat": 53.5484,
+            "lng": 9.9789,
+            "name": "St. Michael's Church"
+        },
+        {
+            "lat": 53.5222,
+            "lng": 9.9389,
+            "name": "Köhlbrand Bridge"
+        }
+    ]
+}

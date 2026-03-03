@@ -1,0 +1,25 @@
+{
+    "answer": "Looking down from 5,000 meters, you’re witnessing a masterclass in 'Brick Expressionism.' Directly below, the Speicherstadt’s stunning red-brick Gothic Revival warehouses form the world’s largest warehouse complex. Nearby, the Elbphilharmonie glitters like a crystalline wave atop a historic brick base—a striking fusion of Hamburg's maritime past and avant-garde future. You can also spot the sharp, ship-like prow of the Chilehaus to the northeast, a pinnacle of 1920s architecture designed to mimic a massive ocean liner.",
+    "followUpQuestions": [
+        "Tell me about the engineering of the Elbphilharmonie.",
+        "What is the history of the Speicherstadt district?",
+        "Can we see the 'Michel' church from here?"
+    ],
+    "locations": [
+        {
+            "lat": 53.5413,
+            "lng": 9.9841,
+            "name": "Elbphilharmonie"
+        },
+        {
+            "lat": 53.5448,
+            "lng": 9.995,
+            "name": "Speicherstadt"
+        },
+        {
+            "lat": 53.5484,
+            "lng": 10.0019,
+            "name": "Chilehaus"
+        }
+    ]
+}

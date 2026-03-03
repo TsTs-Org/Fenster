@@ -1,0 +1,25 @@
+{
+    "answer": "If you peek out the window, you're treated to a spectacular view of the **Altes Land** to the west—Europe’s largest contiguous fruit-growing region. From 5,000 meters, the landscape looks like a giant green circuit board, but those lines are actually ancient drainage canals and rows of millions of apple trees. Directly beneath us is the **Mühlenberger Loch**, one of the last freshwater tidal flats in the Elbe estuary. It’s a critical 'airport lounge' for thousands of migratory birds seeking a snack. You can also see the **Elbe River** widening as it heads toward the North Sea; notice how the sandbanks shift with the tides, creating a dynamic, brackish habitat that's remarkably rare for a major industrial waterway.",
+    "followUpQuestions": [
+        "How do the canals protect the orchards?",
+        "What makes the Mühlenberger Loch special for birds?",
+        "When is the best time to see the fruit blossoms?"
+    ],
+    "locations": [
+        {
+            "lat": 53.521,
+            "lng": 9.852,
+            "name": "Altes Land"
+        },
+        {
+            "lat": 53.542,
+            "lng": 9.818,
+            "name": "Mühlenberger Loch"
+        },
+        {
+            "lat": 53.535,
+            "lng": 9.925,
+            "name": "Elbe River"
+        }
+    ]
+}

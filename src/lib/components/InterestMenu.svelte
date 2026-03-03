@@ -6,6 +6,12 @@
     import iconFood from "$lib/images/Food.png";
     import lufthansaLogo from "$lib/images/LUFTHANS.png";
 
+    import natureData from "$lib/fixed-prompts/nature-answer.json";
+    import historyData from "$lib/fixed-prompts/history-answer.json";
+    import architectureData from "$lib/fixed-prompts/architecture-answer.json";
+    import sightseeingData from "$lib/fixed-prompts/sightseeing-answer.json";
+    import foodData from "$lib/fixed-prompts/food-answer.json";
+
     // Props
     let {
         lat,
@@ -52,114 +58,48 @@
     let errorMessage = $state("");
     let errorDebugInfo = $state("");
 
-    // Read API key
-    const apiKey = import.meta.env.VITE_AUTH_KEY;
-
     async function fetchGeminiInfo(topicPrompt: string) {
-        if (!apiKey) {
-            errorMessage = "Missing VITE_AUTH_KEY in .env file.";
-            errorDebugInfo =
-                "The import.meta.env.VITE_AUTH_KEY value is undefined.";
-            view = "result";
-            return;
-        }
-
         view = "loading";
         errorMessage = "";
         errorDebugInfo = "";
 
         try {
-            const systemInstruction =
-                "You are an expert tour guide in an airplane giving passengers interesting facts about the exact location they are currently flying over. You are given the passenger's current GPS coordinates, their altitude in meters, and a specific topic they want to learn about regarding that location. Keep your answers concise, engaging, and specifically tailored to the coordinates and altitude visual radius provided. Return a JSON object containing three keys: 'answer' (your response text), 'followUpQuestions' (an array of exactly 2 or 3 short string prompts the user can click to ask you next), and 'locations' (an array of up to 3 objects corresponding to specific places you mentioned in your answer. Each object MUST have 'lat', 'lng', and 'name'. If you didn't mention specific pinpointable locations, return an empty array []).";
+            // Fake loading delay
+            await new Promise((r) => setTimeout(r, 800));
 
-            const promptText = `Current Location Coordinates: Latitude ${lat}, Longitude ${lng}. Viewer Altitude: ${heightInMeters} meters. The user is interested in learning about: "${topicPrompt}".`;
-
-            const requestBody = {
-                system_instruction: {
-                    parts: { text: systemInstruction },
-                },
-                contents: [
-                    {
-                        parts: [{ text: promptText }],
-                    },
-                ],
-                generationConfig: {
-                    response_mime_type: "application/json",
-                },
-            };
-
-            console.log(
-                "Gemini API Request Payload:",
-                JSON.stringify(requestBody, null, 2),
-            );
-
-            const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(requestBody),
-                },
-            );
-
-            if (!response.ok) {
-                const errText = await response.text();
-                errorDebugInfo = `HTTP ${response.status} ${response.statusText}\n\nRaw Response:\n${errText}`;
-
-                try {
-                    const errData = JSON.parse(errText);
-                    throw new Error(
-                        errData.error?.message ||
-                            "Failed to fetch from Gemini API",
-                    );
-                } catch (e) {
-                    throw new Error(
-                        `HTTP Error ${response.status}: Failed to ping Gemini.`,
-                    );
-                }
+            let parsed;
+            switch (topicPrompt.toLowerCase()) {
+                case "nature":
+                    parsed = natureData;
+                    break;
+                case "history":
+                    parsed = historyData;
+                    break;
+                case "architecture":
+                    parsed = architectureData;
+                    break;
+                case "sightseeing":
+                    parsed = sightseeingData;
+                    break;
+                case "food":
+                    parsed = foodData;
+                    break;
+                default:
+                    throw new Error("Topic not available in this demo.");
             }
-
-            const data = await response.json();
-            console.log(
-                "Raw Gemini Response Data:",
-                JSON.stringify(data, null, 2),
-            );
-
-            const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            if (!textResult) {
-                console.error(
-                    "No text result parsed from the data candidate parts.",
-                );
-                throw new Error("No response generated");
-            }
-
-            console.log(
-                "Raw Gemini Text Output to be JSON parsed:",
-                textResult,
-            );
-
-            // Parse the guaranteed JSON
-            const parsed = JSON.parse(textResult);
-            console.log("Successfully parsed JSON:", parsed);
 
             let text = parsed.answer || "No answer provided.";
-
             const locs = parsed.locations || [];
             parsedLocations = locs;
 
-            // Optional: Regex inject pin colors over mentioned location names
+            // Regex inject pin colors over mentioned location names
             locs.forEach((loc: { name: string }, index: number) => {
                 if (!loc.name) return;
                 const color = pinColors[index % pinColors.length];
-                // Escape special regex characters in the place name just in case
                 const safeName = loc.name.replace(
                     /[.*+?^${}()|[\]\\]/g,
                     "\\$&",
                 );
-                // Global case-insensitive replacement wrapping the name in a colored pill
                 const regex = new RegExp(`(${safeName})`, "gi");
                 text = text.replace(
                     regex,
@@ -168,7 +108,7 @@
             });
 
             answerText = text;
-            followUpQuestions = parsed.followUpQuestions || [];
+            followUpQuestions = []; // Do not use the follow up questions from JSON
 
             if (onlocationsfetch) {
                 onlocationsfetch(locs);
@@ -176,14 +116,8 @@
 
             view = "result";
         } catch (error: any) {
-            console.error("Gemini API Error:", error);
+            console.error("Mock API Error:", error);
             errorMessage = error.message || "An unexpected error occurred.";
-            if (!errorDebugInfo) {
-                errorDebugInfo = error.toString();
-                if (error.stack) {
-                    errorDebugInfo += `\n\nStack:\n${error.stack}`;
-                }
-            }
             view = "result";
         }
     }
@@ -333,22 +267,14 @@
                     </p>
                 </div>
 
-                {#if followUpQuestions.length > 0}
-                    <div class="follow-ups">
-                        <h4>Dive Deeper</h4>
-                        <div class="follow-up-list">
-                            {#each followUpQuestions as question}
-                                <button
-                                    class="p-button outline-btn"
-                                    onclick={() =>
-                                        handleFollowUpClick(question)}
-                                >
-                                    {question}
-                                </button>
-                            {/each}
-                        </div>
-                    </div>
-                {/if}
+                <div class="follow-ups">
+                    <h4>Dive Deeper</h4>
+                    <p
+                        style="color: #666; font-size: 0.9em; font-style: italic;"
+                    >
+                        follow up questions are not available in this demo
+                    </p>
+                </div>
             {/if}
 
             <button class="p-button text-btn back-btn" onclick={goBack}>
@@ -440,18 +366,6 @@
 
     .p-button:active {
         transform: scale(0.98);
-    }
-
-    .outline-btn {
-        background: transparent;
-        color: #444;
-        border: 2px solid #ddd;
-        padding: 12px 18px;
-    }
-
-    .outline-btn:hover {
-        border-color: #bbb;
-        background: rgba(0, 0, 0, 0.02);
     }
 
     .text-btn {
@@ -572,12 +486,6 @@
         font-size: 0.75rem;
         font-weight: 600;
         color: #444;
-    }
-
-    .follow-up-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
     }
 
     /* Loading State */
